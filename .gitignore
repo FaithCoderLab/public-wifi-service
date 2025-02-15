@@ -57,6 +57,7 @@ buildNumber.properties
 
 # Properties files containing sensitive information
 src/main/resources/properties/application-secret.properties
+src/main/resources/properties/application.properties
 
 # Test reports
 test-output/

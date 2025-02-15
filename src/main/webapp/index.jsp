@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>JSP - Hello World</title>
+  <title>메인 페이지 (와이파이 목록 표시)</title>
 </head>
 <body>
 <h1><%= "Hello World!" %></h1>
