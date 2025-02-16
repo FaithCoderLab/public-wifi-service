@@ -1,5 +1,12 @@
 package com.zerobase.wifi.repository;
 
-public class HistoryRepository {
-    // 위치 히스토리 저장/조회/삭제
+import com.zerobase.wifi.model.entity.History;
+
+import java.util.List;
+
+public interface HistoryRepository {
+    void save(History history);
+    List<History> findAll();
+    void deleteById(Long id);
+    void deleteAll();
 }
