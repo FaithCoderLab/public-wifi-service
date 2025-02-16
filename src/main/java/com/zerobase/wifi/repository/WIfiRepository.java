@@ -1,5 +1,19 @@
 package com.zerobase.wifi.repository;
 
-public class WIfiRepository {
-    // 와이파이 데이터 CRUD 작업
+import com.zerobase.wifi.model.entity.Wifi;
+
+import java.util.List;
+
+public interface WIfiRepository {
+
+    void save(Wifi wifi);
+    Wifi findByMgrNo(String mgrNo);
+    List<Wifi> findAll();
+    void deleteByMgrNo(String mgrNo);
+
+    List<Wifi> findNearbyWifi(double lat, double lnt, int limit);
+    int saveAll(List<Wifi> wifiList);
+
+    void deleteAll();
+    boolean exists(String mgrNo);
 }
