@@ -1,5 +1,12 @@
 package com.zerobase.wifi.service;
 
-public class BookmarkService {
-    // 북마크 관리 비즈니스 로직
+import com.zerobase.wifi.model.dto.BookmarkDto;
+
+import java.util.List;
+
+public interface BookmarkService {
+    void addBookmark(Long groupId, String wifiMgrNo);
+    List<BookmarkDto> getBookmarkList(Long groupId);
+    void deleteBookmark(Long id);
+    BookmarkDto getBookmarkDetail(Long id);
 }
