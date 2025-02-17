@@ -4,7 +4,7 @@ import com.zerobase.wifi.model.entity.Wifi;
 
 import java.util.List;
 
-public interface WIfiRepository {
+public interface WifiRepository {
 
     void save(Wifi wifi);
     Wifi findByMgrNo(String mgrNo);

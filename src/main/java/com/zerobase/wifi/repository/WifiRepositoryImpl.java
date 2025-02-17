@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class WifiRepositoryImpl implements WIfiRepository {
+public class WifiRepositoryImpl implements WifiRepository {
     private final DatabaseConfig dbConfig;
     private static WifiRepositoryImpl instance;
 
@@ -219,7 +219,7 @@ public class WifiRepositoryImpl implements WIfiRepository {
             .netType(rs.getString("NET_TYPE"))
             .installYear(rs.getString("INSTALL_YEAR"))
             .inOutDoor(rs.getString("IN_OUT_DOOR"))
-            .wifiEnvironment(rs.getString("WIFI_ENVIRIONMENT"))
+            .wifiEnvironment(rs.getString("WIFI_ENVIRONMENT"))
             .lat(rs.getDouble("LAT"))
             .lnt(rs.getDouble("LNT"))
             .workDate(rs.getString("WORK_DATE"))
