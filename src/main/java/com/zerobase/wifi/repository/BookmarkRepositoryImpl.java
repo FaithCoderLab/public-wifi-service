@@ -1,5 +1,6 @@
 package com.zerobase.wifi.repository;
 
+import com.google.gson.internal.bind.util.ISO8601Utils;
 import com.zerobase.wifi.model.entity.Bookmark;
 import com.zerobase.wifi.util.DatabaseConfig;
 
@@ -21,6 +22,9 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
 
     private static final String SQL_SELECT_BY_ID =
             "SELECT * FROM BOOKMARK WHERE ID = ?";
+
+    private static final String SQL_SELECT_BY_GROUP_ID =
+            "SELECT * FROM BOOKMARK WHERE GROUP_ID = ?";
 
     private static final String SQL_DELETE_BY_ID =
             "DELETE FROM BOOKMARK WHERE ID = ?";
@@ -47,11 +51,17 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
         try (Connection conn = dbConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SQL_INSERT)) {
 
+            System.out.println("Trying to save bookmark with: ");
+            System.out.println("GroupId: " + bookmark.getGroupId());
+            System.out.println("WifiMgrNo: " + bookmark.getWifiMgrNo());
+            System.out.println("RegDate: " + bookmark.getRegDate());
+
             pstmt.setLong(1, bookmark.getGroupId());
             pstmt.setString(2, bookmark.getWifiMgrNo());
             pstmt.setString(3, bookmark.getRegDate());
 
-            pstmt.executeUpdate();
+            int result = pstmt.executeUpdate();
+            System.out.println("Bookmark saved: " + result);
         } catch (SQLException e) {
             throw new RuntimeException("Error inserting bookmark", e);
         }
@@ -80,7 +90,7 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
         List<Bookmark> bookmarks = new ArrayList<>();
 
         try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL_SELECT_BY_ID)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQL_SELECT_BY_GROUP_ID)) {
 
             pstmt.setLong(1, groupId);
 

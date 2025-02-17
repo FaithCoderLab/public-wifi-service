@@ -23,7 +23,7 @@ public class BookmarkGroupRepositoryImpl implements BookmarkGroupRepository {
             "SELECT * FROM BOOKMARK_GROUP";
 
     private static final String SQL_UPDATE =
-            "UPDATE BOOKMARK_GROUP SET NAME = ?, ORDER_NO = ? MOD_DATE = ?";
+            "UPDATE BOOKMARK_GROUP SET NAME = ?, ORDER_NO = ?, MOD_DATE = ? WHERE ID = ?";
 
     private static final String SQL_DELETE_BY_ID =
             "DELETE FROM BOOKMARK_GROUP WHERE ID = ?";
