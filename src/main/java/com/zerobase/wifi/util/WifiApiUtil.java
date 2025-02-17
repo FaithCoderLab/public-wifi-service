@@ -1,5 +1,8 @@
 package com.zerobase.wifi.util;
 
+import com.google.gson.Gson;
+import com.zerobase.wifi.model.dto.ToPublicWifiInfoDto;
+import com.zerobase.wifi.model.dto.WifiInfoResponse;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -62,5 +65,12 @@ public class WifiApiUtil {
 
     public String testBuildUrl(int start, int end) {
         return buildUrl(start, end);
+    }
+
+    public ToPublicWifiInfoDto getPublicWifiInfo(int start, int end) throws IOException {
+        String jsonResponse = getWifiInfo(start, end);
+        Gson gson = new Gson();
+        WifiInfoResponse response = gson.fromJson(jsonResponse, WifiInfoResponse.class);
+        return response.getToPublicWifiInfo();
     }
 }
