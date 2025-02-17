@@ -73,4 +73,10 @@ public class WifiApiUtil {
         WifiInfoResponse response = gson.fromJson(jsonResponse, WifiInfoResponse.class);
         return response.getToPublicWifiInfo();
     }
+
+    private int getTotalWifiCount() throws IOException {
+        WifiApiUtil wifiApiUtil = WifiApiUtil.getInstance();
+        ToPublicWifiInfoDto infoDto = wifiApiUtil.getPublicWifiInfo(1, 1);
+        return infoDto.getListTotalCount();
+    }
 }
