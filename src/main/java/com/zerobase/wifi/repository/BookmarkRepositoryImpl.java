@@ -48,22 +48,46 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
 
     @Override
     public void save(Bookmark bookmark) {
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL_INSERT)) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        boolean wasInTransaction = false;
 
-            System.out.println("Trying to save bookmark with: ");
-            System.out.println("GroupId: " + bookmark.getGroupId());
-            System.out.println("WifiMgrNo: " + bookmark.getWifiMgrNo());
-            System.out.println("RegDate: " + bookmark.getRegDate());
+        try {
+            conn = dbConfig.getConnection();
+            wasInTransaction = dbConfig.isInTransaction();
 
+            if (!wasInTransaction) {
+                dbConfig.beginTransaction();
+            }
+
+            pstmt = conn.prepareStatement(SQL_INSERT);
             pstmt.setLong(1, bookmark.getGroupId());
             pstmt.setString(2, bookmark.getWifiMgrNo());
             pstmt.setString(3, bookmark.getRegDate());
 
-            int result = pstmt.executeUpdate();
-            System.out.println("Bookmark saved: " + result);
+            pstmt.executeUpdate();
+
+            if (!wasInTransaction) {
+                dbConfig.commit();
+            }
         } catch (SQLException e) {
-            throw new RuntimeException("Error inserting bookmark", e);
+            try {
+                if (!wasInTransaction) {
+                    dbConfig.rollback();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Error rolling back transaction", ex);
+            }
+            throw new RuntimeException("Error saving bookmark", e);
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null && !wasInTransaction) {
+                    dbConfig.closeConnection();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -108,25 +132,85 @@ public class BookmarkRepositoryImpl implements BookmarkRepository {
 
     @Override
     public void deleteById(Long id) {
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL_DELETE_BY_ID)) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        boolean wasInTransaction = false;
 
+        try {
+            conn = dbConfig.getConnection();
+            wasInTransaction = dbConfig.isInTransaction();
+
+            if (!wasInTransaction) {
+                dbConfig.beginTransaction();
+            }
+
+            pstmt = conn.prepareStatement(SQL_DELETE_BY_ID);
             pstmt.setLong(1, id);
             pstmt.executeUpdate();
+
+            if (!wasInTransaction) {
+                dbConfig.commit();
+            }
         } catch (SQLException e) {
-            throw new RuntimeException("Error inserting bookmark", e);
+            try {
+                if (!wasInTransaction) {
+                    dbConfig.rollback();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Error rolling back transaction", ex);
+            }
+            throw new RuntimeException("Error deleting bookmark", e);
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null && !wasInTransaction) {
+                    dbConfig.closeConnection();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
     public void deleteByGroupId(Long groupId) {
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL_DELETE_BY_GROUP_ID)) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        boolean wasInTransaction = false;
 
+        try {
+            conn = dbConfig.getConnection();
+            wasInTransaction = dbConfig.isInTransaction();
+
+            if (!wasInTransaction) {
+                dbConfig.beginTransaction();
+            }
+
+            pstmt = conn.prepareStatement(SQL_DELETE_BY_GROUP_ID);
             pstmt.setLong(1, groupId);
             pstmt.executeUpdate();
+
+            if (!wasInTransaction) {
+                dbConfig.commit();
+            }
         } catch (SQLException e) {
-            throw new RuntimeException("Error inserting bookmark", e);
+            try {
+                if (!wasInTransaction) {
+                    dbConfig.rollback();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Error rolling back transaction", ex);
+            }
+            throw new RuntimeException("Error deleting bookmark", e);
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null && !wasInTransaction) {
+                    dbConfig.closeConnection();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

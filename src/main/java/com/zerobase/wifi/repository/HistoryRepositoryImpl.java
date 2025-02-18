@@ -38,17 +38,47 @@ public class HistoryRepositoryImpl implements HistoryRepository {
 
     @Override
     public void save(History history) {
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL_INSERT)) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        boolean wasInTransaction = false;
 
+        try {
+            conn = dbConfig.getConnection();
+            wasInTransaction = dbConfig.isInTransaction();
+
+            if (!wasInTransaction) {
+                dbConfig.beginTransaction();
+            }
+
+            pstmt = conn.prepareStatement(SQL_INSERT);
             pstmt.setDouble(1, history.getLat());
             pstmt.setDouble(2, history.getLnt());
             pstmt.setString(3, history.getSearchDate());
             pstmt.setBoolean(4, history.isDeleteYn());
 
             pstmt.executeUpdate();
+
+            if (!wasInTransaction) {
+                dbConfig.commit();
+            }
         } catch (SQLException e) {
+            try {
+                if (!wasInTransaction) {
+                    dbConfig.rollback();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Error rolling back transaction", ex);
+            }
             throw new RuntimeException("Error saving history", e);
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null && !wasInTransaction) {
+                    dbConfig.closeConnection();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -71,24 +101,84 @@ public class HistoryRepositoryImpl implements HistoryRepository {
 
     @Override
     public void deleteById(Long id) {
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL_DELETE_BY_ID)) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        boolean wasInTransaction = false;
 
+        try {
+            conn = dbConfig.getConnection();
+            wasInTransaction = dbConfig.isInTransaction();
+
+            if (!wasInTransaction) {
+                dbConfig.beginTransaction();
+            }
+
+            pstmt = conn.prepareStatement(SQL_DELETE_BY_ID);
             pstmt.setLong(1, id);
             pstmt.executeUpdate();
+
+            if (!wasInTransaction) {
+                dbConfig.commit();
+            }
         } catch (SQLException e) {
+            try {
+                if (!wasInTransaction) {
+                    dbConfig.rollback();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Error rolling back transaction", ex);
+            }
             throw new RuntimeException("Error deleting history", e);
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null && !wasInTransaction) {
+                    dbConfig.closeConnection();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
     public void deleteAll() {
-        try (Connection conn = dbConfig.getConnection();
-             Statement stmt = conn.createStatement()) {
+        Connection conn = null;
+        Statement stmt = null;
+        boolean wasInTransaction = false;
 
+        try {
+            conn = dbConfig.getConnection();
+            wasInTransaction = dbConfig.isInTransaction();
+
+            if (!wasInTransaction) {
+                dbConfig.beginTransaction();
+            }
+
+            stmt = conn.createStatement();
             stmt.executeUpdate(SQL_DELETE_ALL);
+
+            if (!wasInTransaction) {
+                dbConfig.commit();
+            }
         } catch (SQLException e) {
+            try {
+                if (!wasInTransaction) {
+                    dbConfig.rollback();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Error rolling back transaction", ex);
+            }
             throw new RuntimeException("Error deleting history", e);
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null && !wasInTransaction) {
+                    dbConfig.closeConnection();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
