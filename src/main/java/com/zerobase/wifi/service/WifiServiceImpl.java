@@ -21,55 +21,92 @@ import java.util.stream.Collectors;
 
 public class WifiServiceImpl implements WifiService {
 
+    public static WifiService getInstance() {
+        return new WifiServiceImpl();
+    }
+
     @Override
     public int loadWifiData() {
+        System.out.println("Loading wifi data");
         int totalCount = getTotalWifiCount();
+        System.out.println("Total wifi count: " + totalCount);
+
         int processedCount = 0;
         int pageSize = 1000;
 
+        // Repository 및 DB 초기화
+        System.out.println("=== Initializing repository and database ===");
         WifiRepository wifiRepository = WifiRepositoryImpl.getInstance();
-        wifiRepository.deleteAll();
-
-        WifiApiUtil wifiApiUtil = WifiApiUtil.getInstance();
-        DatabaseConfig dbConfig = DatabaseConfig.getInstance();
         DatabaseInitializer initializer = DatabaseInitializer.getInstance();
-        initializer.initializeDatabase();
+        WifiApiUtil wifiApiUtil = WifiApiUtil.getInstance();
 
-        for (int start = 1; start <= totalCount; start += pageSize) {
-            int end = Math.min(start + pageSize - 1, totalCount);
+        try {
+            System.out.println("=== Initializing database ===");
+            initializer.initializeDatabase();
+            System.out.println("=== Database initialized ===");
 
-            ToPublicWifiInfoDto wifiInfo = null;
-            try {
-                wifiInfo = wifiApiUtil.getPublicWifiInfo(start, end);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            System.out.println("=== Deleting existing data ===");
+            wifiRepository.deleteAll();
+            System.out.println("=== Existing data deleted ===");
+
+            // 페이지 단위로 데이터 처리
+            for (int start = 1; start <= totalCount; start += pageSize) {
+                int end = Math.min(start + pageSize - 1, totalCount);
+                System.out.println("=== Processing data from " + start + " to " + end + " ===");
+
+                try {
+                    // API로 데이터 가져오기
+                    ToPublicWifiInfoDto wifiInfo = wifiApiUtil.getPublicWifiInfo(start, end);
+                    List<WifiDto> wifiDtoList = wifiInfo.getRow();
+                    System.out.println("Fetched " + wifiDtoList.size() + " records from API");
+
+                    // DTO를 Entity로 변환
+                    List<Wifi> wifiList = wifiDtoList.stream()
+                            .map(dto -> Wifi.builder()
+                                    .mgrNo(dto.getMgrNo())
+                                    .district(dto.getDistrict())
+                                    .name(dto.getName())
+                                    .roadAddress(dto.getRoadAddress())
+                                    .detailAddress(dto.getDetailAddress())
+                                    .installFloor(dto.getInstallFloor())
+                                    .installType(dto.getInstallType())
+                                    .installAgency(dto.getInstallAgency())
+                                    .serviceType(dto.getServiceType())
+                                    .netType(dto.getNetType())
+                                    .installYear(dto.getInstallYear())
+                                    .inOutDoor(dto.getInOutDoor())
+                                    .lat(dto.getLat())
+                                    .lnt(dto.getLnt())
+                                    .workDate(dto.getWorkDate())
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    // DB에 저장
+                    System.out.println("Saving " + wifiList.size() + " records to database");
+                    int savedCount = wifiRepository.saveAll(wifiList);
+                    processedCount += savedCount;
+                    System.out.println("Successfully saved " + savedCount + " records");
+                    System.out.println("Total processed count: " + processedCount);
+
+                } catch (IOException e) {
+                    System.err.println("Error fetching data from API: " + e.getMessage());
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    System.err.println("Error processing batch: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
-            List<WifiDto> wifiDtoList = wifiInfo.getRow();
 
-            List<Wifi> wifiList = wifiDtoList.stream()
-                    .map(dto -> Wifi.builder()
-                            .mgrNo(dto.getMgrNo())
-                            .district(dto.getDistrict())
-                            .name(dto.getName())
-                            .roadAddress(dto.getRoadAddress())
-                            .detailAddress(dto.getDetailAddress())
-                            .installFloor(dto.getInstallFloor())
-                            .installType(dto.getInstallType())
-                            .installAgency(dto.getInstallAgency())
-                            .serviceType(dto.getServiceType())
-                            .netType(dto.getNetType())
-                            .installYear(dto.getInstallYear())
-                            .inOutDoor(dto.getInOutDoor())
-                            .lat(dto.getLat())
-                            .lnt(dto.getLnt())
-                            .workDate(dto.getWorkDate())
-                            .build())
-                    .collect(Collectors.toList());
+            System.out.println("=== Data loading completed ===");
+            System.out.println("Total records processed: " + processedCount);
+            return processedCount;
 
-            processedCount += wifiRepository.saveAll(wifiList);
+        } catch (Exception e) {
+            System.err.println("=== Error during data loading process ===");
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to load wifi data", e);
         }
-
-        return processedCount;
     }
 
     private int getTotalWifiCount() {

@@ -25,17 +25,24 @@ public class DatabaseInitializer {
 
     public void initializeDatabase() {
         try {
+            System.out.println("Initializing database");
             if (isInitialized()) {
                 System.out.println("Database already initialized");
                 return;
             }
 
+            System.out.println("Starting to drop tables");
             dropTables();
+            System.out.println("Tables dropped");
+
+            System.out.println("Creating tables");
             createTables();
+            System.out.println("Tables created");
 
             System.out.println("Database initialized");
         } catch (SQLException e) {
             System.err.println("Failed to initialize database: " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("Database initialization failed", e);
         }
     }

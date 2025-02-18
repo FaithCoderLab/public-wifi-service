@@ -61,13 +61,18 @@
     function getLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    document.getElementById('lat').value = position.coords.latitude;
-                    document.getElementById('lnt').value = position.coords.longitude;
+                function (position) {
+                    const lat = position.coords.latitude;
+                    const lnt = position.coords.longitude;
+
+                    console.log('Got coordinates:', {lat, lnt});
+
+                    document.getElementById('lat').value = lat;
+                    document.getElementById('lnt').value = lnt;
                 },
-                function(error) {
+                function (error) {
                     let errorMessage;
-                    switch(error.code) {
+                    switch (error.code) {
                         case error.PERMISSION_DENIED:
                             errorMessage = "위치 정보 접근 권한이 없습니다.";
                             break;
@@ -88,16 +93,98 @@
         }
     }
 
-    function getNearbyWifi() {
+    async function getNearbyWifi() {
         const lat = document.getElementById('lat').value;
         const lnt = document.getElementById('lnt').value;
+
+        console.log('Input values:', {lat, lnt});
 
         if (!lat || !lnt) {
             alert("위치 정보를 입력해주세요.");
             return;
         }
 
-        alert(`LAT: ${lat}, LNT: ${lnt} 위치의 와이파이 정보를 조회합니다.`)
+        if (isNaN(lat) || isNaN(lnt)) {
+            alert("위치 정보는 숫자만 입력 가능합니다.");
+            return;
+        }
+
+        try {
+            const url = '/api/wifi/nearby?lat=' + lat + '&lnt=' +lnt;
+            console.log('Requesting URL:', url)
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log('Raw response:', response);
+
+            const result = await response.json();
+            console.log('Parsed response:', result);
+
+            if (result.success) {
+                updateWifiTable(result.data);
+            } else {
+                alert('WIFI 정보 조회에 실패하였습니다: ' + result.message);
+            }
+        } catch (error) {
+            alert('WIFI 정보 조회 중 오류가 발생했습니다.');
+            console.error(error);
+        }
+    }
+
+    async function loadWifiData() {
+        try {
+            const response = await fetch('/api/wifi/load', {method: 'POST'});
+            const result = await response.json();
+
+            if (result.success) {
+                alert(`${result.data}개의 WIFI 정보를 정상적으로 로드하였습니다.`);
+                location.reload();
+            } else {
+                alert('WIFI 정보 로드에 실패하였습니다: ' + result.message);
+            }
+        } catch (error) {
+            alert('WIFI 정보 로드 중 오류가 발생했습니다.');
+            console.error(error);
+        }
+    }
+
+    function updateWifiTable(wifiList) {
+        console.log('Updating table with:', wifiList);
+        const tbody = document.querySelector('#wifi-info tbody');
+        tbody.innerHTML = '';
+
+        if (wifiList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="17" class="empty-message">조회된 WIFI 정보가 없습니다.</td></tr>';
+            return;
+        }
+
+        wifiList.forEach(wifi => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${wifi.distance.toFixed(4)}</td>
+                <td>${wifi.mgrNo}</td>
+                <td>${wifi.district}</td>
+                <td><a href="detail.jsp?mgrNo=${wifi.mgrNo}">${wifi.name}</a></td>
+                <td>${wifi.roadAddress}</td>
+                <td>${wifi.detailAddress}</td>
+                <td>${wifi.installFloor}</td>
+                <td>${wifi.installType}</td>
+                <td>${wifi.installAgency}</td>
+                <td>${wifi.serviceType}</td>
+                <td>${wifi.netType}</td>
+                <td>${wifi.installYear}</td>
+                <td>${wifi.inOutDoor}</td>
+                <td>${wifi.wifiEnvironment}</td>
+                <td>${wifi.lat}</td>
+                <td>${wifi.lnt}</td>
+                <td>${wifi.workDate}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 </script>
 </html>
