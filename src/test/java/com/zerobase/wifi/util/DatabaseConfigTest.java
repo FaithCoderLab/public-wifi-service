@@ -10,9 +10,12 @@ import java.sql.SQLException;
 import static org.junit.Assert.*;
 
 public class DatabaseConfigTest {
+    private DatabaseConfig config;
+
     @Before
     public void setUp() {
-        DatabaseConfig.getInstance().closeConnection();
+        config = DatabaseConfig.getInstance();
+        config.closeConnection();
     }
 
     @Test
@@ -25,7 +28,6 @@ public class DatabaseConfigTest {
 
     @Test
     public void getConnection_ShouldCreateNewConnection() {
-        DatabaseConfig config = DatabaseConfig.getInstance();
         Connection connection = config.getConnection();
         assertNotNull(connection);
         assertTrue(config.isConnected());
@@ -33,9 +35,48 @@ public class DatabaseConfigTest {
 
     @Test
     public void closeConnection_ShouldCloseAndClearConnection() {
-        DatabaseConfig config = DatabaseConfig.getInstance();
         config.getConnection();
         config.closeConnection();
+        assertFalse(config.isConnected());
+    }
+
+    @Test
+    public void testTransactionManagement() throws SQLException {
+        assertFalse(config.isInTransaction());
+        config.beginTransaction();
+        assertTrue(config.isInTransaction());
+
+        config.commit();
+        assertFalse(config.isInTransaction());
+
+        config.beginTransaction();
+        assertTrue(config.isInTransaction());
+        config.rollback();
+        assertFalse(config.isInTransaction());
+    }
+
+    @Test(expected = SQLException.class)
+    public void beginTransaction_ShouldThrowException_WhenAlreadyInTransaction() throws SQLException {
+        config.beginTransaction();
+        config.beginTransaction();
+    }
+
+    @Test(expected = SQLException.class)
+    public void commit_ShouldThrowException_WhenNoTransaction() throws SQLException {
+        config.commit();
+    }
+
+    @Test(expected = SQLException.class)
+    public void rollback_ShouldThrowException_WhenNoTransaction() throws SQLException {
+        config.rollback();
+    }
+
+    @Test
+    public void closeConnection_ShouldRollbackOpenTransaction() throws SQLException {
+        config.beginTransaction();
+        assertTrue(config.isInTransaction());
+        config.closeConnection();
+        assertFalse(config.isInTransaction());
         assertFalse(config.isConnected());
     }
 

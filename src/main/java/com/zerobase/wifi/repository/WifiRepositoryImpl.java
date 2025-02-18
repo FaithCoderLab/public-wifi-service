@@ -13,32 +13,32 @@ public class WifiRepositoryImpl implements WifiRepository {
     private static WifiRepositoryImpl instance;
 
     private static final String SQL_INSERT =
-        "INSERT INTO WIFI_INFO (MGR_NO, DISTANCE, DISTRICT, NAME, ROAD_ADDRESS, " +
-        "DETAIL_ADDRESS, INSTALL_FLOOR, INSTALL_TYPE, INSTALL_AGENCY, SERVICE_TYPE, " +
-        "NET_TYPE, INSTALL_YEAR, IN_OUT_DOOR, WIFI_ENVIRONMENT, LAT, LNT, WORK_DATE) " +
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "INSERT INTO WIFI_INFO (MGR_NO, DISTANCE, DISTRICT, NAME, ROAD_ADDRESS, " +
+                    "DETAIL_ADDRESS, INSTALL_FLOOR, INSTALL_TYPE, INSTALL_AGENCY, SERVICE_TYPE, " +
+                    "NET_TYPE, INSTALL_YEAR, IN_OUT_DOOR, WIFI_ENVIRONMENT, LAT, LNT, WORK_DATE) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private static final String SQL_SELECT_BY_MGR_NO =
-        "SELECT * FROM WIFI_INFO WHERE MGR_NO = ?";
+            "SELECT * FROM WIFI_INFO WHERE MGR_NO = ?";
 
     private static final String SQL_SELECT_ALL =
-        "SELECT * FROM WIFI_INFO";
+            "SELECT * FROM WIFI_INFO";
 
     private static final String SQL_DELETE_BY_MGR_NO =
-        "DELETE FROM WIFI_INFO WHERE MGR_NO = ?";
+            "DELETE FROM WIFI_INFO WHERE MGR_NO = ?";
 
     private static final String SQL_NEARBY_WIFI =
-        "SELECT *, " +
-        "((LAT - ?) * (LAT - ?) + (LNT - ?) * (LNT - ?)) AS DISTANCE " +
-        "FROM WIFI_INFO " +
-        "ORDER BY DISTANCE " +
-        "LIMIT ?";
+            "SELECT *, " +
+                    "((LAT - ?) * (LAT - ?) + (LNT - ?) * (LNT - ?)) AS DISTANCE " +
+                    "FROM WIFI_INFO " +
+                    "ORDER BY DISTANCE " +
+                    "LIMIT ?";
 
     private static final String SQL_EXISTS =
-        "SELECT 1 FROM WIFI_INFO WHERE MGR_NO = ?";
+            "SELECT 1 FROM WIFI_INFO WHERE MGR_NO = ?";
 
     private static final String SQL_DELETE_ALL =
-        "DELETE FROM WIFI_INFO";
+            "DELETE FROM WIFI_INFO";
 
     private WifiRepositoryImpl() {
         this.dbConfig = DatabaseConfig.getInstance();
@@ -53,37 +53,71 @@ public class WifiRepositoryImpl implements WifiRepository {
 
     @Override
     public void save(Wifi wifi) {
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL_INSERT)) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        boolean wasInTransaction = false;
 
-            pstmt.setString(1, wifi.getMgrNo());
-            pstmt.setDouble(2, wifi.getDistance());
-            pstmt.setString(3, wifi.getDistrict());
-            pstmt.setString(4, wifi.getName());
-            pstmt.setString(5, wifi.getRoadAddress());
-            pstmt.setString(6, wifi.getDetailAddress());
-            pstmt.setString(7, wifi.getInstallFloor());
-            pstmt.setString(8, wifi.getInstallType());
-            pstmt.setString(9, wifi.getInstallAgency());
-            pstmt.setString(10, wifi.getServiceType());
-            pstmt.setString(11, wifi.getNetType());
-            pstmt.setString(12, wifi.getInstallYear());
-            pstmt.setString(13, wifi.getInOutDoor());
-            pstmt.setString(14, wifi.getWifiEnvironment());
-            pstmt.setDouble(15, wifi.getLat());
-            pstmt.setDouble(16, wifi.getLnt());
-            pstmt.setString(17, wifi.getWorkDate());
+        try {
+            conn = dbConfig.getConnection();
+            wasInTransaction = dbConfig.isInTransaction();
 
+            if (!wasInTransaction) {
+                dbConfig.beginTransaction();
+            }
+
+            pstmt = conn.prepareStatement(SQL_INSERT);
+            setWifiParameters(pstmt, wifi);
             pstmt.executeUpdate();
+
+            if (!wasInTransaction) {
+                dbConfig.commit();
+            }
         } catch (SQLException e) {
-            throw new RuntimeException("Error saving wifi", e);
+            try {
+                if (!wasInTransaction) {
+                    dbConfig.rollback();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Error rolling back transaction", ex);
+            }
+            throw new RuntimeException("Error saving wifi");
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null && !wasInTransaction) {
+                    dbConfig.closeConnection();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
+    }
+
+
+    private void setWifiParameters(PreparedStatement pstmt, Wifi wifi) throws SQLException {
+        pstmt.setString(1, wifi.getMgrNo());
+        pstmt.setDouble(2, wifi.getDistance());
+        pstmt.setString(3, wifi.getDistrict());
+        pstmt.setString(4, wifi.getName());
+        pstmt.setString(5, wifi.getRoadAddress());
+        pstmt.setString(6, wifi.getDetailAddress());
+        pstmt.setString(7, wifi.getInstallFloor());
+        pstmt.setString(8, wifi.getInstallType());
+        pstmt.setString(9, wifi.getInstallAgency());
+        pstmt.setString(10, wifi.getServiceType());
+        pstmt.setString(11, wifi.getNetType());
+        pstmt.setString(12, wifi.getInstallYear());
+        pstmt.setString(13, wifi.getInOutDoor());
+        pstmt.setString(14, wifi.getWifiEnvironment());
+        pstmt.setDouble(15, wifi.getLat());
+        pstmt.setDouble(16, wifi.getLnt());
+        pstmt.setString(17, wifi.getWorkDate());
     }
 
     @Override
     public Wifi findByMgrNo(String mgrNo) {
         try (Connection conn = dbConfig.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(SQL_SELECT_BY_MGR_NO)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQL_SELECT_BY_MGR_NO)) {
 
             pstmt.setString(1, mgrNo);
 
@@ -119,7 +153,7 @@ public class WifiRepositoryImpl implements WifiRepository {
     @Override
     public void deleteByMgrNo(String mgrNo) {
         try (Connection conn = dbConfig.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(SQL_DELETE_BY_MGR_NO)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQL_DELETE_BY_MGR_NO)) {
 
             pstmt.setString(1, mgrNo);
             pstmt.executeUpdate();
@@ -133,7 +167,7 @@ public class WifiRepositoryImpl implements WifiRepository {
         List<Wifi> nearbyWifi = new ArrayList<>();
 
         try (Connection conn = dbConfig.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(SQL_NEARBY_WIFI)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQL_NEARBY_WIFI)) {
 
             pstmt.setDouble(1, lat);
             pstmt.setDouble(2, lat);
@@ -157,43 +191,100 @@ public class WifiRepositoryImpl implements WifiRepository {
 
     @Override
     public int saveAll(List<Wifi> wifiList) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
         int count = 0;
-        try (Connection conn = dbConfig.getConnection()) {
-            conn.setAutoCommit(false);
+        boolean wasInTransaction = false;
 
-            try (PreparedStatement pstmt = conn.prepareStatement(SQL_INSERT)) {
-                for (Wifi wifi : wifiList) {
-                    pstmt.setString(1, wifi.getMgrNo());
-                    pstmt.addBatch();
-                    count++;
-                }
-                pstmt.executeBatch();
-                conn.commit();
-            } catch (SQLException e) {
-                conn.rollback();
-                throw e;
+        try {
+            conn = dbConfig.getConnection();
+            wasInTransaction = dbConfig.isInTransaction();
+
+            if (!wasInTransaction) {
+                dbConfig.beginTransaction();
             }
+
+            pstmt = conn.prepareStatement(SQL_INSERT);
+
+            for (Wifi wifi : wifiList) {
+                setWifiParameters(pstmt, wifi);
+                pstmt.addBatch();
+                count++;
+            }
+
+            pstmt.executeBatch();
+
+            if (!wasInTransaction) {
+                dbConfig.commit();
+            }
+
+            return count;
         } catch (SQLException e) {
-            throw new RuntimeException("Error saving wifi", e);
+            try {
+                if (!wasInTransaction) {
+                    dbConfig.rollback();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Error rolling back transaction", ex);
+            }
+            throw new RuntimeException("Error saving wifi list", e);
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null && !wasInTransaction) {
+                    dbConfig.closeConnection();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
-        return count;
     }
 
     @Override
     public void deleteAll() {
-        try (Connection conn = dbConfig.getConnection();
-            Statement stmt = conn.createStatement()) {
+        Connection conn = null;
+        Statement stmt = null;
+        boolean wasInTransaction = false;
 
+        try {
+            conn = dbConfig.getConnection();
+            wasInTransaction = dbConfig.isInTransaction();
+
+            if (!wasInTransaction) {
+                dbConfig.beginTransaction();
+            }
+
+            stmt = conn.createStatement();
             stmt.executeUpdate(SQL_DELETE_ALL);
+
+            if (!wasInTransaction) {
+                dbConfig.commit();
+            }
         } catch (SQLException e) {
-            throw new RuntimeException("Error saving wifi", e);
+            try {
+                if (!wasInTransaction) {
+                    dbConfig.rollback();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Error rolling back transaction", ex);
+            }
+            throw new RuntimeException("Error deleting all wifi list", e);
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null && !wasInTransaction) {
+                    dbConfig.closeConnection();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
     public boolean exists(String mgrNo) {
         try (Connection conn = dbConfig.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(SQL_EXISTS)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQL_EXISTS)) {
 
             pstmt.setString(1, mgrNo);
 
@@ -207,22 +298,22 @@ public class WifiRepositoryImpl implements WifiRepository {
 
     private Wifi mapResultSetToWifi(ResultSet rs) throws SQLException {
         return Wifi.builder()
-            .mgrNo(rs.getString("MGR_NO"))
-            .distance(rs.getDouble("DISTANCE"))
-            .district(rs.getString("DISTRICT"))
-            .name(rs.getString("NAME"))
-            .roadAddress(rs.getString("ROAD_ADDRESS"))
-            .detailAddress(rs.getString("DETAIL_ADDRESS"))
-            .installFloor(rs.getString("INSTALL_FLOOR"))
-            .installType(rs.getString("INSTALL_AGENCY"))
-            .serviceType(rs.getString("SERVICE_TYPE"))
-            .netType(rs.getString("NET_TYPE"))
-            .installYear(rs.getString("INSTALL_YEAR"))
-            .inOutDoor(rs.getString("IN_OUT_DOOR"))
-            .wifiEnvironment(rs.getString("WIFI_ENVIRONMENT"))
-            .lat(rs.getDouble("LAT"))
-            .lnt(rs.getDouble("LNT"))
-            .workDate(rs.getString("WORK_DATE"))
-            .build();
+                .mgrNo(rs.getString("MGR_NO"))
+                .distance(rs.getDouble("DISTANCE"))
+                .district(rs.getString("DISTRICT"))
+                .name(rs.getString("NAME"))
+                .roadAddress(rs.getString("ROAD_ADDRESS"))
+                .detailAddress(rs.getString("DETAIL_ADDRESS"))
+                .installFloor(rs.getString("INSTALL_FLOOR"))
+                .installType(rs.getString("INSTALL_AGENCY"))
+                .serviceType(rs.getString("SERVICE_TYPE"))
+                .netType(rs.getString("NET_TYPE"))
+                .installYear(rs.getString("INSTALL_YEAR"))
+                .inOutDoor(rs.getString("IN_OUT_DOOR"))
+                .wifiEnvironment(rs.getString("WIFI_ENVIRONMENT"))
+                .lat(rs.getDouble("LAT"))
+                .lnt(rs.getDouble("LNT"))
+                .workDate(rs.getString("WORK_DATE"))
+                .build();
     }
 }

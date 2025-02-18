@@ -10,15 +10,9 @@ import java.sql.SQLException;
 public class DatabaseConfig {
     private String getDBPath() {
         URL resource = getClass().getClassLoader().getResource("db/wifi.db");
-        System.out.println("Resource: " + resource);
-        System.out.println("Current directory: " + System.getProperty("user.dir"));
-
-        System.out.println("ClassLoader: " + getClass().getClassLoader());
 
         if (resource != null) {
-            String path = resource.getPath();
-            System.out.println("Database path: " + path);
-            return path;
+            return resource.getPath();
         }
         throw new RuntimeException("Database file not found");
     }
@@ -30,6 +24,7 @@ public class DatabaseConfig {
 
     private static DatabaseConfig instance;
     private Connection connection;
+    private boolean isInTransaction;
 
     @Getter
     private int retryCount;
@@ -42,6 +37,7 @@ public class DatabaseConfig {
         this.retryCount = MAX_RETRY_COUNT;
         this.connectionTimeout = DEFAULT_TIMEOUT;
         this.isConnected = false;
+        this.isInTransaction = false;
     }
 
     public boolean isConnected() {
@@ -64,6 +60,11 @@ public class DatabaseConfig {
                 Class.forName("org.sqlite.JDBC");
                 connection = DriverManager.getConnection(JDBC_URL);
                 isConnected = true;
+
+                if (!isInTransaction) {
+                    connection.setAutoCommit(true);
+                }
+
                 return connection;
             } catch (SQLException | ClassNotFoundException e) {
                 if (i < retryCount - 1) {
@@ -75,11 +76,57 @@ public class DatabaseConfig {
         return connection;
     }
 
+    public void beginTransaction() throws SQLException {
+        if (isInTransaction) {
+            throw new SQLException("Transaction is already in progress");
+        }
+
+        Connection conn = getConnection();
+        conn.setAutoCommit(false);
+        isInTransaction = true;
+    }
+
+    public void commit() throws SQLException {
+        if (!isInTransaction) {
+            throw new SQLException("Transaction is not in progress");
+        }
+
+        try {
+            Connection conn = getConnection();
+            conn.commit();
+            conn.setAutoCommit(true);
+        } finally {
+            isInTransaction = false;
+        }
+    }
+
+    public void rollback() throws SQLException {
+        if (!isInTransaction) {
+            throw new SQLException("Transaction is not in progress");
+        }
+
+        try {
+            Connection conn = getConnection();
+            conn.rollback();
+            conn.setAutoCommit(true);
+        } finally {
+            isInTransaction = false;
+        }
+    }
+
+    public boolean isInTransaction() {
+        return isInTransaction;
+    }
+
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
+                if (isInTransaction) {
+                    connection.rollback();
+                }
                 connection.close();
                 isConnected = false;
+                isInTransaction = false;
                 connection = null;
             }
         } catch (SQLException e) {
