@@ -34,7 +34,6 @@ public class WifiServiceImpl implements WifiService {
         int processedCount = 0;
         int pageSize = 1000;
 
-        // Repository 및 DB 초기화
         System.out.println("=== Initializing repository and database ===");
         WifiRepository wifiRepository = WifiRepositoryImpl.getInstance();
         DatabaseInitializer initializer = DatabaseInitializer.getInstance();
@@ -49,18 +48,15 @@ public class WifiServiceImpl implements WifiService {
             wifiRepository.deleteAll();
             System.out.println("=== Existing data deleted ===");
 
-            // 페이지 단위로 데이터 처리
             for (int start = 1; start <= totalCount; start += pageSize) {
                 int end = Math.min(start + pageSize - 1, totalCount);
                 System.out.println("=== Processing data from " + start + " to " + end + " ===");
 
                 try {
-                    // API로 데이터 가져오기
                     ToPublicWifiInfoDto wifiInfo = wifiApiUtil.getPublicWifiInfo(start, end);
                     List<WifiDto> wifiDtoList = wifiInfo.getRow();
                     System.out.println("Fetched " + wifiDtoList.size() + " records from API");
 
-                    // DTO를 Entity로 변환
                     List<Wifi> wifiList = wifiDtoList.stream()
                             .map(dto -> Wifi.builder()
                                     .mgrNo(dto.getMgrNo())
@@ -81,7 +77,6 @@ public class WifiServiceImpl implements WifiService {
                                     .build())
                             .collect(Collectors.toList());
 
-                    // DB에 저장
                     System.out.println("Saving " + wifiList.size() + " records to database");
                     int savedCount = wifiRepository.saveAll(wifiList);
                     processedCount += savedCount;
