@@ -9,36 +9,7 @@
 <html>
 <head>
   <title>와이파이 정보 구하기</title>
-  <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
-
-    th {
-      background-color: #04AA6D;
-      color: white;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-
-    .navigation {
-      margin-bottom: 20px;
-    }
-
-    .navigation a {
-      margin-right: 10px;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 <h1>위치 히스토리 목록</h1>

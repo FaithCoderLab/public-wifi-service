@@ -3,6 +3,7 @@
 <html>
 <head>
     <title>와이파이 정보 구하기</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 <h1>와이파이 정보 구하기</h1>
