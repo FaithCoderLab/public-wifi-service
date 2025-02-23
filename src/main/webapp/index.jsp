@@ -195,6 +195,8 @@
                 '<td>' + wifi.WORK_DTTM + '</td>';
             tbody.appendChild(tr);
         });
+
+        document.getElementById('message').style.display = 'none';
     }
 </script>
 </html>
