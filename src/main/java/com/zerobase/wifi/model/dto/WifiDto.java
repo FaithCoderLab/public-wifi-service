@@ -28,15 +28,6 @@ public class WifiDto {
     @SerializedName("X_SWIFI_INSTL_TY")
     private String installType;
 
-    @SerializedName("X_SWIFI_INSTL_MBY")
-    private String installAgency;
-
-    @SerializedName("X_SWIFI_SVC_SE")
-    private String serviceType;
-
-    @SerializedName("X_SWIFI_CMCWR")
-    private String netType;
-
     @SerializedName("X_SWIFI_CNSTC_YEAR")
     private String installYear;
 

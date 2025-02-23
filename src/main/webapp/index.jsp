@@ -110,7 +110,7 @@
         }
 
         try {
-            const url = '/api/wifi/nearby?lat=' + lat + '&lnt=' +lnt;
+            const url = '/api/wifi/nearby?lat=' + lat + '&lnt=' + lnt;
             console.log('Requesting URL:', url)
 
             const response = await fetch(url, {
@@ -157,31 +157,33 @@
         const tbody = document.querySelector('#wifi-info tbody');
         tbody.innerHTML = '';
 
-        if (wifiList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="16" class="empty-message">조회된 WIFI 정보가 없습니다.</td></tr>';
+        if (!wifiList || wifiList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="17" class="empty-message">조회된 WIFI 정보가 없습니다.</td></tr>';
             return;
         }
 
         wifiList.forEach(wifi => {
             const tr = document.createElement('tr');
+
             tr.innerHTML = `
             <td>${wifi.distance.toFixed(4)}</td>
-            <td>${wifi.mgrNo}</td>
-            <td>${wifi.district}</td>
-            <td><a href="detail.jsp?mgrNo=${wifi.mgrNo}">${wifi.name}</a></td>
-            <td>${wifi.roadAddress}</td>
-            <td>${wifi.detailAddress}</td>
-            <td>${wifi.installFloor}</td>
-            <td>${wifi.installType}</td>
-            <td>${wifi.installAgency}</td>
-            <td>${wifi.serviceType}</td>
-            <td>${wifi.netType}</td>
-            <td>${wifi.installYear}</td>
-            <td>${wifi.inOutDoor}</td>
-            <td>${wifi.lat}</td>
-            <td>${wifi.lnt}</td>
-            <td>${wifi.workDate}</td>
+            <td>${wifi.X_SWIFI_MGR_NO || ''}</td>
+            <td>${wifi.X_SWIFI_WRDOFC || ''}</td>
+            <td><a href="detail.jsp?mgrNo=${wifi.X_SWIFI_MGR_NO || ''}">${wifi.X_SWIFI_MAIN_NM || ''}</a></td>
+            <td>${wifi.X_SWIFI_ADRES1 || ''}</td>
+            <td>${wifi.X_SWIFI_ADRES2 || ''}</td>
+            <td>${wifi.X_SWIFI_INSTL_FLOOR || ''}</td>
+            <td>${wifi.X_SWIFI_INSTL_TY || ''}</td>
+            <td>${''}</td>
+            <td>${''}</td>
+            <td>${''}</td>
+            <td>${wifi.X_SWIFI_CNSTC_YEAR || ''}</td>
+            <td>${wifi.X_SWIFI_INOUT_DOOR || ''}</td>
+            <td>${wifi.LAT || ''}</td>
+            <td>${wifi.LNT || ''}</td>
+            <td>${wifi.WORK_DTTM || ''}</td>
         `;
+
             tbody.appendChild(tr);
         });
     }

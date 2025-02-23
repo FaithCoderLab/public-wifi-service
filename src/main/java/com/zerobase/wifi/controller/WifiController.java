@@ -29,7 +29,6 @@ public class WifiController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
-        System.out.println("pathInfo = " + pathInfo);
 
         try {
             if (pathInfo == null || pathInfo.equals("/")) {
@@ -133,6 +132,9 @@ public class WifiController extends HttpServlet {
             throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
+
+        String jsonResponse = gson.toJson(ApiResponse.success(data));
+        System.out.println("Response JSON: " + jsonResponse);
 
         PrintWriter out = response.getWriter();
         out.print(gson.toJson(ApiResponse.success(data)));
