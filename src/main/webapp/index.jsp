@@ -162,28 +162,37 @@
             return;
         }
 
-        wifiList.forEach(wifi => {
+        console.log('Raw wifiList:', wifiList);
+        console.log('wifiList type:', typeof wifiList);
+        console.log('Is Array?', Array.isArray(wifiList));
+
+        if (Array.isArray(wifiList)) {
+            console.log('First item:', wifiList[0]);
+            console.log('First item type:', typeof wifiList[0]);
+        }
+
+        const dataArray = Array.isArray(wifiList) ? wifiList : [wifiList];
+
+        dataArray.forEach(wifi => {
+            const distance = Number(wifi.distance).toFixed(4);
             const tr = document.createElement('tr');
-
-            tr.innerHTML = `
-            <td>${wifi.distance.toFixed(4)}</td>
-            <td>${wifi.X_SWIFI_MGR_NO || ''}</td>
-            <td>${wifi.X_SWIFI_WRDOFC || ''}</td>
-            <td><a href="detail.jsp?mgrNo=${wifi.X_SWIFI_MGR_NO || ''}">${wifi.X_SWIFI_MAIN_NM || ''}</a></td>
-            <td>${wifi.X_SWIFI_ADRES1 || ''}</td>
-            <td>${wifi.X_SWIFI_ADRES2 || ''}</td>
-            <td>${wifi.X_SWIFI_INSTL_FLOOR || ''}</td>
-            <td>${wifi.X_SWIFI_INSTL_TY || ''}</td>
-            <td>${''}</td>
-            <td>${''}</td>
-            <td>${''}</td>
-            <td>${wifi.X_SWIFI_CNSTC_YEAR || ''}</td>
-            <td>${wifi.X_SWIFI_INOUT_DOOR || ''}</td>
-            <td>${wifi.LAT || ''}</td>
-            <td>${wifi.LNT || ''}</td>
-            <td>${wifi.WORK_DTTM || ''}</td>
-        `;
-
+            tr.innerHTML =
+                '<td>' + distance + '</td>' +
+                '<td>' + wifi.X_SWIFI_MGR_NO + '</td>' +
+                '<td>' + wifi.X_SWIFI_WRDOFC + '</td>' +
+                '<td><a href="detail.jsp?mgrNo=' + wifi.X_SWIFI_MGR_NO + '">' + wifi.X_SWIFI_MAIN_NM + '</a></td>' +
+                '<td>' + wifi.X_SWIFI_ADRES1 + '</td>' +
+                '<td>' + wifi.X_SWIFI_ADRES2 + '</td>' +
+                '<td>' + wifi.X_SWIFI_INSTL_FLOOR + '</td>' +
+                '<td>' + wifi.X_SWIFI_INSTL_TY + '</td>' +
+                '<td></td>' +
+                '<td></td>' +
+                '<td></td>' +
+                '<td>' + wifi.X_SWIFI_CNSTC_YEAR + '</td>' +
+                '<td>' + wifi.X_SWIFI_INOUT_DOOR + '</td>' +
+                '<td>' + wifi.LAT + '</td>' +
+                '<td>' + wifi.LNT + '</td>' +
+                '<td>' + wifi.WORK_DTTM + '</td>';
             tbody.appendChild(tr);
         });
     }

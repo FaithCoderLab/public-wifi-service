@@ -137,7 +137,7 @@ public class WifiController extends HttpServlet {
         System.out.println("Response JSON: " + jsonResponse);
 
         PrintWriter out = response.getWriter();
-        out.print(gson.toJson(ApiResponse.success(data)));
+        out.print(jsonResponse);
         out.flush();
     }
 

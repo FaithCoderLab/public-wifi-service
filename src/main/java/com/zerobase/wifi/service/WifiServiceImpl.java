@@ -66,9 +66,6 @@ public class WifiServiceImpl implements WifiService {
                                     .detailAddress(dto.getDetailAddress())
                                     .installFloor(dto.getInstallFloor())
                                     .installType(dto.getInstallType())
-                                    .installAgency(dto.getInstallAgency())
-                                    .serviceType(dto.getServiceType())
-                                    .netType(dto.getNetType())
                                     .installYear(dto.getInstallYear())
                                     .inOutDoor(dto.getInOutDoor())
                                     .lat(dto.getLat())
@@ -158,7 +155,6 @@ public class WifiServiceImpl implements WifiService {
         dto.setDetailAddress(wifi.getDetailAddress());
         dto.setInstallFloor(wifi.getInstallFloor());
         dto.setInstallType(wifi.getInstallType());
-        dto.setInstallAgency(wifi.getInstallAgency());
         dto.setInstallYear(wifi.getInstallYear());
         dto.setInOutDoor(wifi.getInOutDoor());
         dto.setLat(wifi.getLat());
