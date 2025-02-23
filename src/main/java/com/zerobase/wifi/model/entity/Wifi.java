@@ -21,9 +21,7 @@ public class Wifi {
     private String netType;
     private String installYear;
     private String inOutDoor;
-    private String wifiEnvironment;
     private double lat;
     private double lnt;
     private String workDate;
-
 }

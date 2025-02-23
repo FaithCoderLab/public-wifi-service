@@ -128,7 +128,6 @@ public class WifiRepositoryTest {
                 .netType("임대망")
                 .installYear("2023")
                 .inOutDoor("실내")
-                .wifiEnvironment("일반")
                 .lat(37.5665)
                 .lnt(126.9780)
                 .workDate("2023-12-31")

@@ -45,7 +45,6 @@
         <th>망종류</th>
         <th>설치년도</th>
         <th>실내외구분</th>
-        <th>WIFI접속환경</th>
         <th>X좌표</th>
         <th>Y좌표</th>
         <th>작업일자</th>
@@ -159,31 +158,30 @@
         tbody.innerHTML = '';
 
         if (wifiList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="17" class="empty-message">조회된 WIFI 정보가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="16" class="empty-message">조회된 WIFI 정보가 없습니다.</td></tr>';
             return;
         }
 
         wifiList.forEach(wifi => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${wifi.distance.toFixed(4)}</td>
-                <td>${wifi.mgrNo}</td>
-                <td>${wifi.district}</td>
-                <td><a href="detail.jsp?mgrNo=${wifi.mgrNo}">${wifi.name}</a></td>
-                <td>${wifi.roadAddress}</td>
-                <td>${wifi.detailAddress}</td>
-                <td>${wifi.installFloor}</td>
-                <td>${wifi.installType}</td>
-                <td>${wifi.installAgency}</td>
-                <td>${wifi.serviceType}</td>
-                <td>${wifi.netType}</td>
-                <td>${wifi.installYear}</td>
-                <td>${wifi.inOutDoor}</td>
-                <td>${wifi.wifiEnvironment}</td>
-                <td>${wifi.lat}</td>
-                <td>${wifi.lnt}</td>
-                <td>${wifi.workDate}</td>
-            `;
+            <td>${wifi.distance.toFixed(4)}</td>
+            <td>${wifi.mgrNo}</td>
+            <td>${wifi.district}</td>
+            <td><a href="detail.jsp?mgrNo=${wifi.mgrNo}">${wifi.name}</a></td>
+            <td>${wifi.roadAddress}</td>
+            <td>${wifi.detailAddress}</td>
+            <td>${wifi.installFloor}</td>
+            <td>${wifi.installType}</td>
+            <td>${wifi.installAgency}</td>
+            <td>${wifi.serviceType}</td>
+            <td>${wifi.netType}</td>
+            <td>${wifi.installYear}</td>
+            <td>${wifi.inOutDoor}</td>
+            <td>${wifi.lat}</td>
+            <td>${wifi.lnt}</td>
+            <td>${wifi.workDate}</td>
+        `;
             tbody.appendChild(tr);
         });
     }

@@ -15,8 +15,8 @@ public class WifiRepositoryImpl implements WifiRepository {
     private static final String SQL_INSERT =
             "INSERT INTO WIFI_INFO (MGR_NO, DISTANCE, DISTRICT, NAME, ROAD_ADDRESS, " +
                     "DETAIL_ADDRESS, INSTALL_FLOOR, INSTALL_TYPE, INSTALL_AGENCY, SERVICE_TYPE, " +
-                    "NET_TYPE, INSTALL_YEAR, IN_OUT_DOOR, WIFI_ENVIRONMENT, LAT, LNT, WORK_DATE) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "NET_TYPE, INSTALL_YEAR, IN_OUT_DOOR, LAT, LNT, WORK_DATE) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private static final String SQL_SELECT_BY_MGR_NO =
             "SELECT * FROM WIFI_INFO WHERE MGR_NO = ?";
@@ -108,10 +108,9 @@ public class WifiRepositoryImpl implements WifiRepository {
         pstmt.setString(11, wifi.getNetType());
         pstmt.setString(12, wifi.getInstallYear());
         pstmt.setString(13, wifi.getInOutDoor());
-        pstmt.setString(14, wifi.getWifiEnvironment());
-        pstmt.setDouble(15, wifi.getLat());
-        pstmt.setDouble(16, wifi.getLnt());
-        pstmt.setString(17, wifi.getWorkDate());
+        pstmt.setDouble(14, wifi.getLat());
+        pstmt.setDouble(15, wifi.getLnt());
+        pstmt.setString(16, wifi.getWorkDate());
     }
 
     @Override
@@ -310,7 +309,6 @@ public class WifiRepositoryImpl implements WifiRepository {
                 .netType(rs.getString("NET_TYPE"))
                 .installYear(rs.getString("INSTALL_YEAR"))
                 .inOutDoor(rs.getString("IN_OUT_DOOR"))
-                .wifiEnvironment(rs.getString("WIFI_ENVIRONMENT"))
                 .lat(rs.getDouble("LAT"))
                 .lnt(rs.getDouble("LNT"))
                 .workDate(rs.getString("WORK_DATE"))
