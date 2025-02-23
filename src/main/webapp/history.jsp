@@ -90,26 +90,28 @@
   }
 
   function updateHistoryTable(historyList) {
-    const tbody = document.querySelector('#history-table-tbody');
+    const tbody = document.querySelector('#history-table tbody');
     tbody.innerHTML = '';
 
-    if (historyList.length === 0) {
+    const dataArray = Array.isArray(historyList) ? historyList : [historyList];
+
+    if (dataArray.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" class="empty-message">위치 정보 조회 내역이 없습니다.</td></tr>';
       return;
     }
 
-    historyList.forEach(history => {
+    dataArray.forEach(history => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-            <td>${history.id}</td>
-            <td>${history.lat}</td>
-            <td>${history.lnt}</td>
-            <td>${history.searchDate}</td>
-            <td><button onclick="deleteHistory(${history.id})">삭제</button></td>
-            `;
+      tr.innerHTML =
+              '<td>' + history.id + '</td>' +
+              '<td>' + history.lat + '</td>' +
+              '<td>' + history.lnt + '</td>' +
+              '<td>' + history.searchDate + '</td>' +
+              '<td><button onclick="deleteHistory(' + history.id + ')">삭제</button></td>';
       tbody.appendChild(tr);
     });
   }
+
 </script>
 </body>
 </html>
