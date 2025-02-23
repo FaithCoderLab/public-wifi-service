@@ -162,22 +162,19 @@
             return;
         }
 
-        console.log('Raw wifiList:', wifiList);
-        console.log('wifiList type:', typeof wifiList);
-        console.log('Is Array?', Array.isArray(wifiList));
-
-        if (Array.isArray(wifiList)) {
-            console.log('First item:', wifiList[0]);
-            console.log('First item type:', typeof wifiList[0]);
-        }
+        const lat = parseFloat(document.getElementById('lat').value);
+        const lnt = parseFloat(document.getElementById('lnt').value);
 
         const dataArray = Array.isArray(wifiList) ? wifiList : [wifiList];
 
         dataArray.forEach(wifi => {
-            const distance = Number(wifi.distance).toFixed(4);
+            const wifiLat = parseFloat(wifi.LAT);
+            const wifiLnt = parseFloat(wifi.LNT);
+            const distance = calculateDistance(lat, lnt, wifiLat, wifiLnt).toFixed(4); // 거리 계산
+
             const tr = document.createElement('tr');
             tr.innerHTML =
-                '<td>' + distance + '</td>' +
+                '<td>' + distance + '</td>' + // 계산된 거리 값 추가
                 '<td>' + wifi.X_SWIFI_MGR_NO + '</td>' +
                 '<td>' + wifi.X_SWIFI_WRDOFC + '</td>' +
                 '<td><a href="detail.jsp?mgrNo=' + wifi.X_SWIFI_MGR_NO + '">' + wifi.X_SWIFI_MAIN_NM + '</a></td>' +
@@ -198,5 +195,20 @@
 
         document.getElementById('message').style.display = 'none';
     }
+
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // 지구 반지름 (단위: km)
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // 거리 반환 (단위: km)
+    }
+
 </script>
 </html>
